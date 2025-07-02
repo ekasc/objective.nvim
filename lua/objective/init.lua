@@ -23,7 +23,7 @@ function M.setup(user_config)
 	core = require("objective.core")
 	core._set_config(config)
 
-	vim.api.nvim_create_autocmd("SetObjective", function(opts)
+	vim.api.nvim_create_user_command("SetObjective", function(opts)
 		local Input = require("nui.input").Input
 		local inp = Input({
 			position = "50%",
