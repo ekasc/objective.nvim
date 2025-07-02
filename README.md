@@ -5,7 +5,7 @@ Floating HUD for your current dev objective per repo, zero noise.
 ```lua
 -- with lazy.nvim
 {
-  "your-github-user/objective.nvim",
+  "ekasc/objective.nvim",
   dependencies = { "MunifTanjim/nui.nvim" },
   event = { "BufReadPost", "BufNewFile" },
   config = function()
