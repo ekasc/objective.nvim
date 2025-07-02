@@ -19,11 +19,14 @@ function M.show(text, config)
 		enter = false,
 		focusable = false,
 		border = { style = config.border },
-		buf_options = { modifiable = false, readonly = true },
+		buf_options = { modifiable = true, readonly = false },
 	})
 
 	popup:mount()
+	-- vim.api.nvim_buf_set_lines(popup.bufnr, 0, 1, false, { msg })
 	vim.api.nvim_buf_set_lines(popup.bufnr, 0, 1, false, { msg })
+	vim.api.nvim_buf_set_option(popup.bufnr, "modifiable", false)
+	vim.api.nvim_buf_set_option(popup.bufnr, "readonly", true)
 	vim.api.nvim_buf_add_highlight(popup.bufnr, -1, config.highlight, 0, 0, -1)
 end
 

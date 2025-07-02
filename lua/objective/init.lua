@@ -22,10 +22,12 @@ function M.setup(user_config)
 	config = vim.tbl_deep_extend("force", defaults, user_config or {})
 	core = require("objective.core")
 	core._set_config(config)
+	core.refresh()
 
+	local inp
 	vim.api.nvim_create_user_command("SetObjective", function(opts)
-		local Input = require("nui.input").Input
-		local inp = Input({
+		local Input = require("nui.input")
+		inp = Input({
 			position = "50%",
 			size = { width = 20, height = 8 },
 			border = { style = config.border },
@@ -55,7 +57,7 @@ function M.setup(user_config)
 	end, { desc = "Set objective (multiline floating)" })
 
 	vim.keymap.set("n", "<leader>oo", "<cmd>SetObjective<CR>", { desc = "Set objective" })
-	vim.cmd(("hi default %s gui=italic"):format(cfg.highlight))
+	vim.cmd(("hi default %s gui=italic"):format(config.highlight))
 end
 
 return M
