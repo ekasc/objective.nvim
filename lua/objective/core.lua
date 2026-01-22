@@ -7,19 +7,40 @@ function M._set_config(cfg)
 end
 
 function M.find_git_root()
+	-- Special buffers (like `health://`, `lspinfo://`, help, prompts) can make
+	-- `%:p:h` or `fnamemodify(..., ':h')` return a non-changing value, which can
+	-- otherwise lead to an infinite loop.
+	local bt = vim.bo.buftype
+	if bt ~= "" then
+		return nil
+	end
+
+	local name = vim.api.nvim_buf_get_name(0)
+	if name:match("^%w+://") then
+		return nil
+	end
+
 	local path = vim.fn.expand("%:p:h")
-	while path and path ~= "/" do
+	if not path or path == "" or path == "." then
+		return nil
+	end
+
+	local prev
+	while path and path ~= "/" and path ~= prev do
 		if vim.fn.isdirectory(path .. "/.git") == 1 then
 			return path
 		end
+		prev = path
 		path = vim.fn.fnamemodify(path, ":h")
 	end
+
+	return nil
 end
 
 local function objective_path(root)
 	for _, fn in ipairs(config.resolvers) do
 		local p = fn(root)
-		if vim.fn.filereadable(p) >= 0 then
+		if vim.fn.filereadable(p) == 1 then
 			return p
 		end
 	end

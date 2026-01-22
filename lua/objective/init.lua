@@ -26,9 +26,35 @@ function M.setup(user_config)
 	local ui = require("objective.ui")
 
 	-- auto-refresh HUD on startup / buffer switches / resize / dir change
+	-- Guard against recursion when our own popup triggers events (eg. :LspInfo).
+	local scheduled = false
 	vim.api.nvim_create_autocmd({ "VimEnter", "BufEnter", "DirChanged", "WinResized" }, {
 		callback = function()
-			ui.show(core._get_current(), config)
+			if scheduled then
+				return
+			end
+			scheduled = true
+			vim.schedule(function()
+				scheduled = false
+
+				local bufnr = vim.api.nvim_get_current_buf()
+				if ui.is_popup_buf(bufnr) then
+					return
+				end
+
+				-- Skip special buffers like :LspInfo / help / prompts.
+				if vim.bo[bufnr].buftype ~= "" then
+					return
+				end
+
+				-- Also skip scheme buffers like health://, lspinfo://, etc.
+				local name = vim.api.nvim_buf_get_name(bufnr)
+				if name:match("^%w+://") then
+					return
+				end
+
+				ui.show(core._get_current(), config)
+			end)
 		end,
 	})
 
