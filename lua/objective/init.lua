@@ -36,6 +36,7 @@ local default_config = {
 
 local auto_hide_timer
 local hud_enabled = true
+local editor_win
 
 ---@param timeout number seconds until auto-hide
 local function start_auto_hide(timeout)
@@ -157,6 +158,14 @@ function M.setup(user_config)
 		clear_auto_hide()
 		ui.hide()
 
+		-- Close any existing editor popup to avoid nui state conflicts.
+		if editor_win then
+			pcall(function()
+				editor_win:unmount()
+			end)
+			editor_win = nil
+		end
+
 		-- Capture git root from the buffer we were editing before opening the popup.
 		local captured_root = core.find_git_root()
 		local current = core._get_current()
@@ -167,7 +176,8 @@ function M.setup(user_config)
 		vim.bo[buf].swapfile = false
 
 		local Popup = require("nui.popup")
-		local win = Popup({
+		editor_win = Popup({
+			bufnr = buf,
 			position = "50%",
 			size = {
 				width = math.floor(vim.o.columns * 0.6),
@@ -183,11 +193,8 @@ function M.setup(user_config)
 			win_options = { winhighlight = "Normal:Normal" },
 		})
 
-		win:mount()
-		vim.schedule(function()
-			vim.api.nvim_set_current_buf(buf)
-			vim.cmd("startinsert")
-		end)
+		editor_win:mount()
+		vim.cmd("startinsert")
 
 		-- :w saves the objective (BufWriteCmd)
 		vim.api.nvim_create_autocmd("BufWriteCmd", {
@@ -210,18 +217,18 @@ function M.setup(user_config)
 			end,
 		})
 
-		-- Clean up popup when window is closed (e.g. via :q)
-		vim.api.nvim_create_autocmd("WinClosed", {
-			pattern = tostring(win.winid),
+		-- Clean up when buffer leaves its window (e.g. via :q)
+		vim.api.nvim_create_autocmd("BufWinLeave", {
+			buffer = buf,
 			once = true,
 			callback = function()
 				vim.api.nvim_clear_autocmds({ group = no_modified, buffer = buf })
-				pcall(function()
-					win:unmount()
+				vim.schedule(function()
+					if vim.api.nvim_buf_is_valid(buf) then
+						vim.api.nvim_buf_delete(buf, { force = true })
+					end
 				end)
-				if vim.api.nvim_buf_is_valid(buf) then
-					vim.api.nvim_buf_delete(buf, { force = true })
-				end
+				editor_win = nil
 			end,
 		})
 	end, { desc = "Edit Objective" })

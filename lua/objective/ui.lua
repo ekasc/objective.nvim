@@ -5,7 +5,9 @@ local rendering = false
 
 function M.hide()
 	if popup then
-		popup:unmount()
+		pcall(function()
+			popup:unmount()
+		end)
 		popup = nil
 	end
 end
