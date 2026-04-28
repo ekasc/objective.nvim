@@ -61,6 +61,15 @@ local function clear_auto_hide()
 	end
 end
 
+local function close_editor()
+	if editor_win then
+		pcall(function()
+			editor_win:unmount()
+		end)
+		editor_win = nil
+	end
+end
+
 ---@param config table
 local function validate_config(config)
 	local ok, err = pcall(vim.validate, {
@@ -109,6 +118,11 @@ function M.setup(user_config)
 					return
 				end
 
+				-- Skip the editor popup buffer so the HUD doesn't render on top.
+				if editor_win and editor_win.bufnr == bufnr then
+					return
+				end
+
 				-- Skip special buffers like :LspInfo / help / prompts.
 				if vim.bo[bufnr].buftype ~= "" then
 					return
@@ -135,6 +149,9 @@ function M.setup(user_config)
 
 	-- Toggle command and mapping
 	vim.api.nvim_create_user_command("ObjectiveToggle", function()
+		-- Close editor if open so the toggle is clean.
+		close_editor()
+
 		hud_enabled = not hud_enabled
 		if hud_enabled then
 			local current = core._get_current()
@@ -159,12 +176,7 @@ function M.setup(user_config)
 		ui.hide()
 
 		-- Close any existing editor popup to avoid nui state conflicts.
-		if editor_win then
-			pcall(function()
-				editor_win:unmount()
-			end)
-			editor_win = nil
-		end
+		close_editor()
 
 		-- Capture git root from the buffer we were editing before opening the popup.
 		local captured_root = core.find_git_root()

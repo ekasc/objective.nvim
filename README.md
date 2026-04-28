@@ -27,8 +27,8 @@ This lets me drop a quick objective and keep it visible — no todo list, no dis
 - `<leader>oo` → open the floating objective editor
 - `<leader>ot` → toggle the HUD on/off
 - Type your objective (multi-line supported)
-- Press `<Esc>` to save and close
-- Press `<C-q>` to discard changes and close
+- Use `:w` to save and `:q` to close the editor (standard Vim buffer behavior)
+- Use `:wq` to save and close in one step
 
 Your objective is saved to `.git/OBJECTIVE` or `.objective` in your repo.
 A floating HUD displays it on buffer switches and window resizes, then
@@ -71,9 +71,10 @@ require("objective").setup({
 | Mapping | Mode | Description |
 |---------|------|-------------|
 | `<leader>oo` | Normal | Open the objective editor |
-| `<leader>ot` | Normal | Toggle the HUD |
-| `<Esc>` | Insert / Normal (editor) | Save and close editor |
-| `<C-q>` | Insert / Normal (editor) | Discard changes and close editor |
+| `<leader>ot` | Normal | Toggle the HUD (closes editor if open) |
+| `:w` | Editor | Save the objective (via WriteCmd) |
+| `:q` | Editor | Close the editor |
+| `:wq` | Editor | Save and close |
 
 ## Changelog
 

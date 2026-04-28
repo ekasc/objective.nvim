@@ -31,7 +31,8 @@ function M.find_git_root()
 
 	local prev
 	while path and path ~= "/" and path ~= prev do
-		if vim.fn.isdirectory(path .. "/.git") == 1 then
+		local dotgit = path .. "/.git"
+		if vim.fn.isdirectory(dotgit) == 1 or vim.fn.filereadable(dotgit) == 1 then
 			return path
 		end
 		prev = path
@@ -80,7 +81,19 @@ function M.set(text, root)
 	if not root then
 		return vim.notify("Not in a Git repo", vim.log.levels.WARN)
 	end
+	if not config.resolvers or #config.resolvers == 0 then
+		return vim.notify("No resolvers configured", vim.log.levels.ERROR)
+	end
 	local p = objective_path(root) or config.resolvers[1](root)
+
+	-- Empty objective means "clear it" — delete the file instead of writing empty content.
+	text = text or ""
+	if text:match("^%s*$") then
+		os.remove(p)
+		require("objective.ui").hide()
+		return
+	end
+
 	vim.fn.mkdir(vim.fn.fnamemodify(p, ":h"), "p")
 	local f = io.open(p, "w")
 	if not f then
