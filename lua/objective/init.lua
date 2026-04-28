@@ -165,7 +165,6 @@ function M.setup(user_config)
 		vim.bo[buf].filetype = "markdown"
 		vim.bo[buf].buftype = ""
 		vim.bo[buf].swapfile = false
-		vim.api.nvim_buf_set_name(buf, "objective://edit")
 
 		local Popup = require("nui.popup")
 		local win = Popup({
@@ -220,6 +219,9 @@ function M.setup(user_config)
 				pcall(function()
 					win:unmount()
 				end)
+				if vim.api.nvim_buf_is_valid(buf) then
+					vim.api.nvim_buf_delete(buf, { force = true })
+				end
 			end,
 		})
 	end, { desc = "Edit Objective" })

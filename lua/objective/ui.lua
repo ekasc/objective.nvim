@@ -66,6 +66,7 @@ function M.show(text, config)
 
 		if popup and popup.bufnr and vim.api.nvim_buf_is_valid(popup.bufnr) then
 			vim.api.nvim_buf_set_lines(popup.bufnr, 0, -1, false, lines)
+			vim.bo[popup.bufnr].filetype = "markdown"
 			vim.api.nvim_buf_add_highlight(popup.bufnr, -1, config.highlight, 0, 0, -1)
 		end
 	end)
