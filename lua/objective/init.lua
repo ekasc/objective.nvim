@@ -163,6 +163,9 @@ function M.setup(user_config)
 		local buf = vim.api.nvim_create_buf(false, true)
 		vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(current, "\n", { plain = true }))
 		vim.bo[buf].filetype = "markdown"
+		vim.bo[buf].buftype = ""
+		vim.bo[buf].swapfile = false
+		vim.api.nvim_buf_set_name(buf, "objective://edit")
 
 		local Popup = require("nui.popup")
 		local win = Popup({
@@ -187,31 +190,38 @@ function M.setup(user_config)
 			vim.cmd("startinsert")
 		end)
 
-		local function save_and_close()
-			local new = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-			core.set(table.concat(new, "\n"), captured_root)
-			win:unmount()
-		end
+		-- :w saves the objective (BufWriteCmd)
+		vim.api.nvim_create_autocmd("BufWriteCmd", {
+			buffer = buf,
+			callback = function()
+				local new = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+				core.set(table.concat(new, "\n"), captured_root)
+				vim.bo[buf].modified = false
+			end,
+		})
 
-		local function close_without_save()
-			win:unmount()
-		end
+		-- Keep modified=false so :q never complains about unsaved changes.
+		-- The user explicitly saves with :w (which triggers BufWriteCmd).
+		local no_modified = vim.api.nvim_create_augroup("ObjectiveNoModified", { clear = true })
+		vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
+			group = no_modified,
+			buffer = buf,
+			callback = function()
+				vim.bo[buf].modified = false
+			end,
+		})
 
-		-- Save and close
-		vim.keymap.set("i", "<Esc>", function()
-			vim.cmd("stopinsert")
-			save_and_close()
-		end, { buffer = buf, silent = true })
-
-		vim.keymap.set("n", "<Esc>", save_and_close, { buffer = buf, silent = true })
-
-		-- Discard changes
-		vim.keymap.set({ "i", "n" }, "<C-q>", function()
-			if vim.fn.mode() == "i" then
-				vim.cmd("stopinsert")
-			end
-			close_without_save()
-		end, { buffer = buf, silent = true })
+		-- Clean up popup when window is closed (e.g. via :q)
+		vim.api.nvim_create_autocmd("WinClosed", {
+			pattern = tostring(win.winid),
+			once = true,
+			callback = function()
+				vim.api.nvim_clear_autocmds({ group = no_modified, buffer = buf })
+				pcall(function()
+					win:unmount()
+				end)
+			end,
+		})
 	end, { desc = "Edit Objective" })
 end
 
