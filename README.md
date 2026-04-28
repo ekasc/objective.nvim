@@ -1,9 +1,10 @@
-# objective.nvim 🎯  
+# objective.nvim 🎯
+
 Floating HUD for your current dev objective per repo — clean, no clutter.
 
 ## Why?
 
-I kept forgetting what I was doing after taking breaks.  
+I kept forgetting what I was doing after taking breaks.
 This lets me drop a quick objective and keep it visible — no todo list, no distractions.
 
 ---
@@ -23,32 +24,57 @@ This lets me drop a quick objective and keep it visible — no todo list, no dis
 
 ## Usage
 
-- `<leader>oo` → open a floating editor  
-- Type your objective (multi-line supported)  
-- Press `Esc` twice to save and close  
+- `<leader>oo` → open the floating objective editor
+- `<leader>ot` → toggle the HUD on/off
+- Type your objective (multi-line supported)
+- Press `<Esc>` to save and close
+- Press `<C-q>` to discard changes and close
 
-Your objective is saved to `.git/OBJECTIVE` or `.objective` in your repo.  
-A floating HUD displays it on buffer switches and window resizes.
+Your objective is saved to `.git/OBJECTIVE` or `.objective` in your repo.
+A floating HUD displays it on buffer switches and window resizes, then
+auto-hides after a few seconds so it never gets in the way.
+
+If no objective is set, the HUD stays hidden.
 
 ## Configuration
 
-You can tweak how the popup looks and which key opens it:
+You can tweak how the popup looks and which keys trigger it:
 
 ```lua
 require("objective").setup({
-    icon = "🚀", -- icon shown in the popup title (empty = no icon)
-	border = "rounded", -- border style: "single", "round", "double".
-	col_offset = 5, -- horizontal offset from right edge
-	row = 2, -- vertical offset from top
-    min_width = 30, -- minimum popup height (in rows)
-    min_height = 2, -- minimum popup width (in columns)
-	highlight = "Background", -- highlight group for the objective window
-	mapping = "<leader>oo", -- which keybinding opens the editor
-	-- where to look for your objective file (in order)
-	resolvers = {
-		function(root) return root .. "/.git/OBJECTIVE" end,
-		function(root) return root .. "/.objective" end
-	},
+    icon = "🚀",               -- icon shown in the popup title (empty = no icon)
+    border = "rounded",        -- border style: "single", "rounded", "double"
+    col_offset = 5,            -- horizontal offset from right edge
+    row = 2,                   -- vertical offset from top
+    min_width = 30,            -- minimum popup width (in columns)
+    min_height = 2,            -- minimum popup height (in rows)
+    highlight = "Background",  -- highlight group for the objective window
+    mapping = "<leader>oo",    -- keybinding to open the editor
+    toggle_mapping = "<leader>ot", -- keybinding to toggle the HUD
+    timeout = 5,               -- auto-hide timeout in seconds (0 to disable)
+    -- where to look for your objective file (in order)
+    resolvers = {
+        function(root) return root .. "/.git/OBJECTIVE" end,
+        function(root) return root .. "/.objective" end
+    },
 })
-
 ```
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `:ObjectiveToggle` | Show or hide the objective HUD |
+
+## Mappings
+
+| Mapping | Mode | Description |
+|---------|------|-------------|
+| `<leader>oo` | Normal | Open the objective editor |
+| `<leader>ot` | Normal | Toggle the HUD |
+| `<Esc>` | Insert / Normal (editor) | Save and close editor |
+| `<C-q>` | Insert / Normal (editor) | Discard changes and close editor |
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for version history.

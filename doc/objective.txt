@@ -1,0 +1,113 @@
+*objective.txt*  Floating HUD for your current dev objective per repo
+
+Author:  ekasc
+License: Same terms as Vim itself (see |license|)
+
+==============================================================================
+CONTENTS                                              *objective-contents*
+
+  1. Introduction ................................ |objective-introduction|
+  2. Installation ................................ |objective-installation|
+  3. Usage ....................................... |objective-usage|
+  4. Configuration ............................... |objective-configuration|
+  5. Commands .................................... |objective-commands|
+  6. Mappings .................................... |objective-mappings|
+
+==============================================================================
+1. INTRODUCTION                                   *objective-introduction*
+
+objective.nvim is a minimal Neovim plugin that shows a floating HUD with your
+current development objective for the repository you are working in.
+
+It is designed to be clean and distraction-free: no todo lists, no complex
+workflows — just a single visible reminder of what you are doing right now.
+
+The objective is persisted per repository in `.git/OBJECTIVE` (or `.objective`)
+and shown automatically when you switch buffers or resize windows.
+
+==============================================================================
+2. INSTALLATION                                   *objective-installation*
+
+Install via your favourite plugin manager.
+
+Example with lazy.nvim:
+>
+  {
+    "ekasc/objective.nvim",
+    dependencies = { "MunifTanjim/nui.nvim" },
+    event = { "BufReadPost", "BufNewFile" },
+    config = function()
+      require("objective").setup()
+    end,
+  }
+<
+
+==============================================================================
+3. USAGE                                                 *objective-usage*
+
+Press `<leader>oo` to open the floating objective editor.
+
+Type your objective (multi-line is supported).
+
+In the editor:
+- Press `<Esc>` to save and close.
+- Press `<C-q>` to close without saving (discard changes).
+
+The HUD will appear automatically when you switch buffers or resize your
+window, and auto-hide after a configurable timeout.
+
+If no objective is set, the HUD stays hidden.
+
+==============================================================================
+4. CONFIGURATION                                 *objective-configuration*
+
+Call `setup()` with a table to override defaults:
+>
+  require("objective").setup({
+    icon = "🎯",               -- icon shown in popup title
+    border = "rounded",        -- border style: "single", "rounded", "double"
+    col_offset = 10,           -- horizontal offset from right edge
+    row = 1,                   -- vertical offset from top
+    min_width = 20,            -- minimum popup width (columns)
+    min_height = 1,            -- minimum popup height (rows)
+    mapping = "<leader>oo",    -- keybinding to open the editor
+    toggle_mapping = "<leader>ot", -- keybinding to toggle the HUD
+    highlight = "Background",  -- highlight group for objective text
+    timeout = 5,               -- auto-hide timeout in seconds (0 to disable)
+    resolvers = {              -- path resolvers (checked in order)
+      function(root) return root .. "/.git/OBJECTIVE" end,
+      function(root) return root .. "/.objective" end,
+    },
+  })
+<
+
+All fields are optional.
+
+                                                   *objective-resolvers*
+
+`resolvers` is a list of functions that receive the git root path and return a
+file path. The first existing file is read; when writing, the first resolver is
+used.
+
+==============================================================================
+5. COMMANDS                                           *objective-commands*
+
+:ObjectiveToggle                                         *:ObjectiveToggle*
+
+  Manually show or hide the objective HUD. This persists until toggled again.
+
+==============================================================================
+6. MAPPINGS                                           *objective-mappings*
+
+Default normal-mode mappings (configurable via |objective-configuration|):
+
+`<leader>oo`      Open the floating objective editor.
+`<leader>ot`      Toggle the objective HUD visibility.
+
+In the editor:
+
+`<Esc>`           Save the objective and close the editor.
+`<C-q>`           Discard changes and close the editor.
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

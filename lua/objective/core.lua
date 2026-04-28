@@ -1,11 +1,15 @@
 local M = {}
 
+---@type table|nil
 local config
 
+---@param cfg table
 function M._set_config(cfg)
 	config = cfg
 end
 
+---Find the git root of the current buffer.
+---@return string|nil
 function M.find_git_root()
 	-- Special buffers (like `health://`, `lspinfo://`, help, prompts) can make
 	-- `%:p:h` or `fnamemodify(..., ':h')` return a non-changing value, which can
@@ -37,6 +41,8 @@ function M.find_git_root()
 	return nil
 end
 
+---@param root string
+---@return string|nil
 local function objective_path(root)
 	for _, fn in ipairs(config.resolvers) do
 		local p = fn(root)
@@ -46,6 +52,8 @@ local function objective_path(root)
 	end
 end
 
+---Read the current objective text.
+---@return string
 function M._get_current()
 	local root = M.find_git_root()
 	if not root then
@@ -64,6 +72,8 @@ function M._get_current()
 	return txt or ""
 end
 
+---Write objective text and refresh the HUD.
+---@param text string
 function M.set(text)
 	local root = M.find_git_root()
 	if not root then

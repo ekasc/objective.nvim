@@ -14,6 +14,8 @@ function M.is_popup_buf(bufnr)
 	return popup ~= nil and popup.bufnr == bufnr
 end
 
+---@param text string objective text to display
+---@param config table current plugin config
 function M.show(text, config)
 	if rendering then
 		return
@@ -21,6 +23,12 @@ function M.show(text, config)
 	rendering = true
 
 	local ok, err = pcall(function()
+		-- Don't show empty or whitespace-only objectives
+		if not text or text:match("^%s*$") then
+			M.hide()
+			return
+		end
+
 		local lines = vim.split(text, "\n", { plain = true })
 		local width = 0
 		for _, l in ipairs(lines) do
