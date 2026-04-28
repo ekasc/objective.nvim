@@ -157,6 +157,8 @@ function M.setup(user_config)
 		clear_auto_hide()
 		ui.hide()
 
+		-- Capture git root from the buffer we were editing before opening the popup.
+		local captured_root = core.find_git_root()
 		local current = core._get_current()
 		local buf = vim.api.nvim_create_buf(false, true)
 		vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(current, "\n", { plain = true }))
@@ -187,7 +189,7 @@ function M.setup(user_config)
 
 		local function save_and_close()
 			local new = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-			core.set(table.concat(new, "\n"))
+			core.set(table.concat(new, "\n"), captured_root)
 			win:unmount()
 		end
 

@@ -74,8 +74,9 @@ end
 
 ---Write objective text and refresh the HUD.
 ---@param text string
-function M.set(text)
-	local root = M.find_git_root()
+---@param root? string optional git root (falls back to current buffer)
+function M.set(text, root)
+	root = root or M.find_git_root()
 	if not root then
 		return vim.notify("Not in a Git repo", vim.log.levels.WARN)
 	end
